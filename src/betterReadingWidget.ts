@@ -15,20 +15,20 @@ class BetterReadingWidget extends WidgetType {
 		super();
 	}
 
-	eq(other: BetterReadingWidget) {
-		const markdownView = app.workspace.getActiveViewOfType(MarkdownView);
-		if (!markdownView) {
-			return;
-		}
-
-		const editor = markdownView.editor;
-		const offset = editor.offsetToPos(this.from);
-		const originalOffset = editor.offsetToPos(other.from);
-		if (offset.line === originalOffset.line) {
-			return true;
-		}
-		return other.view === this.view && other.from === this.from && other.to === this.to;
-	}
+	// eq(other: BetterReadingWidget) {
+	// 	const markdownView = app.workspace.getActiveViewOfType(MarkdownView);
+	// 	if (!markdownView) {
+	// 		return;
+	// 	}
+	//
+	// 	const editor = markdownView.editor;
+	// 	const offset = editor.offsetToPos(this.from);
+	// 	const originalOffset = editor.offsetToPos(other.from);
+	// 	if (offset.line === originalOffset.line) {
+	// 		return true;
+	// 	}
+	// 	return other.view === this.view && other.from === this.from && other.to === this.to;
+	// }
 
 	toDOM() {
 		return createSpan('cm-better-reading');
