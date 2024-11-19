@@ -6,9 +6,9 @@ import execWithIndices from 'regexp-match-indices';
 
 const empty = { from: -1, to: -1, match: /.*/.exec("")! }
 
-const baseFlags = "gm" + "u"  // 确保启用Unicode标志
+const baseFlags = "gm" + (/x/.unicode == null ? "" : "u")
 
-/// This class is similar to [`SearchCursor`](#search.SearchCursor)
+/// This class is similar to [SearchCursor](#search.SearchCursor)
 /// but searches for a regular expression pattern instead of a plain
 /// string.
 export class RegExpCursor implements Iterator<{ from: number, to: number, match: RegExpExecArray }> {
@@ -18,18 +18,18 @@ export class RegExpCursor implements Iterator<{ from: number, to: number, match:
 	private curLineStart!: number
 	private matchPos!: number
 
-	/// Set to `true` when the cursor has reached the end of the search
+	/// Set to true when the cursor has reached the end of the search
 	/// range.
 	done = false
 
 	/// Will contain an object with the extent of the match and the
-	/// match object when [`next`](#search.RegExpCursor.next)
+	/// match object when [next](#search.RegExpCursor.next)
 	/// sucessfully finds a match.
 	value = empty
 
 	/// Create a cursor that will search the given range in the given
-	/// document. `query` should be the raw pattern (as you'd pass it to
-	/// `new RegExp`).
+	/// document. query should be the raw pattern (as you'd pass it to
+	/// new RegExp).
 	constructor(text: Text, query: string, options?: { ignoreCase?: boolean }, from: number = 0, private to: number = text.length) {
 		// if (/\\[sWDnr]|\n|\r|\[\^/.test(query)) return new MultilineRegExpCursor(text, query, options, from, to) as any
 		this.re = new RegExp(query, baseFlags + (options?.ignoreCase ? "i" : ""))
@@ -62,14 +62,13 @@ export class RegExpCursor implements Iterator<{ from: number, to: number, match:
 	next() {
 		for (let off = this.matchPos - this.curLineStart; ;) {
 			this.re.lastIndex = off
-			// 修改这里，使用 matchAll() 来替代 execWithIndices，支持Unicode字符的匹配
-			let match = this.matchPos <= this.to && Array.from(this.curLine.matchAll(this.re))
-			if (match.length > 0) {
-				let from = this.curLineStart + match[0].index!, to = from + match[0][0].length
+			let match = this.matchPos <= this.to && execWithIndices(this.re, this.curLine)
+			if (match) {
+				let from = this.curLineStart + match.index, to = from + match[0].length
 				this.matchPos = to + (from == to ? 1 : 0)
 				if (from == this.curLine.length) this.nextLine()
 				if (from < to || from > this.value.to) {
-					this.value = { from, to, match: match[0] }
+					this.value = { from, to, match }
 					return this
 				}
 				off = this.matchPos - this.curLineStart
