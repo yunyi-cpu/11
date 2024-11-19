@@ -59,28 +59,28 @@ export class RegExpCursor implements Iterator<{ from: number, to: number, match:
 	}
 
 	/// Move to the next match, if there is one.
-	next() {
-		for (let off = this.matchPos - this.curLineStart; ;) {
-			this.re.lastIndex = off
-			let match = this.matchPos <= this.to && execWithIndices(this.re, this.curLine)
-			if (match) {
-				let from = this.curLineStart + match.index, to = from + match[0].length
-				this.matchPos = to + (from == to ? 1 : 0)
-				if (from == this.curLine.length) this.nextLine()
-				if (from < to || from > this.value.to) {
-					this.value = { from, to, match }
-					return this
-				}
-				off = this.matchPos - this.curLineStart
-			} else if (this.curLineStart + this.curLine.length < this.to) {
-				this.nextLine()
-				off = 0
-			} else {
-				this.done = true
-				return this
-			}
-		}
-	}
+next() {
+    for (let off = this.matchPos - this.curLineStart; ;) {
+        this.re.lastIndex = off;
+        let match = this.matchPos <= this.to && execWithIndices(this.re, this.curLine);
+        if (match) {
+            let from = this.curLineStart + match.index, 
+                to = from + match[0].length;
+            this.matchPos = to + (from == to ? 1 : 0);
+            if (from == this.curLine.length) this.nextLine();
+
+            // 不进行任何筛选，直接处理匹配结果
+            this.value = { from, to, match };
+            return this;
+        } else if (this.curLineStart + this.curLine.length < this.to) {
+            this.nextLine();
+            off = 0;
+        } else {
+            this.done = true;
+            return this;
+        }
+    }
+}
 
 	[Symbol.iterator]!: () => Iterator<{ from: number, to: number, match: RegExpExecArray }>
 }
